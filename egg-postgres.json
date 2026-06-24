@@ -1,0 +1,56 @@
+{
+  "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PTERODACTYL PANEL",
+  "meta": {
+    "version": "PTDL_v2",
+    "update_url": null
+  },
+  "name": "PostgreSQL",
+  "description": "An open-source, highly robust object-relational database system. Excellent for high-performance usage like Paperless-ngx or large Nextcloud installations.",
+  "features": null,
+  "docker_images": {
+    "PostgreSQL 16 (Alpine)": "postgres:16-alpine",
+    "PostgreSQL 15 (Alpine)": "postgres:15-alpine",
+    "PostgreSQL 14 (Alpine)": "postgres:14-alpine",
+    "PostgreSQL (Latest Alpine)": "postgres:alpine"
+  },
+  "file_denylist": [],
+  "startup": "export PGPASSWORD=\"${POSTGRES_PASSWORD}\"\nif [ ! -d \"/home/container/postgres\" ]; then\n    echo \"Initializing database...\"\n    mkdir -p /home/container/postgres\n    echo \"${POSTGRES_PASSWORD}\" > /tmp/pg_pass\n    initdb -D /home/container/postgres -U ${POSTGRES_USER} --pwfile=/tmp/pg_pass --auth=scram-sha-256\n    rm -f /tmp/pg_pass\n    echo \"host all all 0.0.0.0/0 scram-sha-256\" >> /home/container/postgres/pg_hba.conf\n    echo \"host all all 127.0.0.1/32 trust\" >> /home/container/postgres/pg_hba.conf\n    echo \"listen_addresses = '*'\" >> /home/container/postgres/postgresql.conf\nfi\npostgres -D /home/container/postgres -p ${SERVER_PORT} &\nPG_PID=$!\necho \"Waiting for PostgreSQL to start...\"\nuntil pg_isready -h localhost -p ${SERVER_PORT} -U ${POSTGRES_USER}; do\n    sleep 1\ndone\necho \"Syncing database password...\"\npsql -h localhost -p ${SERVER_PORT} -U ${POSTGRES_USER} -d postgres -c \"ALTER USER ${POSTGRES_USER} WITH PASSWORD '${POSTGRES_PASSWORD}';\"\npsql -h localhost -p ${SERVER_PORT} -U ${POSTGRES_USER} -d postgres -tc \"SELECT 1 FROM pg_database WHERE datname = '${POSTGRES_DB}'\" | grep -q 1 || psql -h localhost -p ${SERVER_PORT} -U ${POSTGRES_USER} -d postgres -c \"CREATE DATABASE ${POSTGRES_DB} OWNER ${POSTGRES_USER};\"\nwait $PG_PID",
+  "config": {
+    "files": "{}",
+    "startup": "{\"done\": \"database system is ready to accept connections\"}",
+    "logs": "{}",
+    "stop": "^C"
+  },
+  "variables": [
+    {
+      "name": "Postgres User",
+      "description": "The default user to create.",
+      "env_variable": "POSTGRES_USER",
+      "default_value": "pterodactyl",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|alpha_dash|max:64",
+      "field_type": "text"
+    },
+    {
+      "name": "Postgres Password",
+      "description": "The password for the default database user.",
+      "env_variable": "POSTGRES_PASSWORD",
+      "default_value": "",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:128",
+      "field_type": "text"
+    },
+    {
+      "name": "Postgres Database",
+      "description": "The default database name to create.",
+      "env_variable": "POSTGRES_DB",
+      "default_value": "pterodactyl",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|alpha_dash|max:64",
+      "field_type": "text"
+    }
+  ]
+}
