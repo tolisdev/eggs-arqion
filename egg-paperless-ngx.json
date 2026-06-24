@@ -1,143 +1,191 @@
 {
-  "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PTERODACTYL PANEL",
-  "meta": {
-    "version": "PTDL_v2",
-    "update_url": null
-  },
-  "name": "Paperless-ngx",
-  "description": "A document management system that transforms your physical documents into a searchable online archive. Requires Redis and optionally PostgreSQL/MariaDB.",
-  "features": null,
-  "docker_images": {
-    "Paperless-ngx (Latest)": "ghcr.io/paperless-ngx/paperless-ngx:latest"
-  },
-  "file_denylist": [],
-  "startup": "mkdir -p /home/container/data /home/container/media /home/container/consume /home/container/export\n\nexport PAPERLESS_DATA_DIR=\"/home/container/data\"\nexport PAPERLESS_MEDIA_ROOT=\"/home/container/media\"\nexport PAPERLESS_CONSUMPTION_DIR=\"/home/container/consume\"\nexport PAPERLESS_EXPORT_DIR=\"/home/container/export\"\nexport PAPERLESS_PORT=\"${SERVER_PORT}\"\n\nif [ -z \"${PAPERLESS_SECRET_KEY}\" ]; then\n    echo \"Generating random Django secret key...\"\n    export PAPERLESS_SECRET_KEY=$(tr -dc 'a-z0-9!@#%^&*(-_=+)' < /dev/urandom | head -c 50)\nfi\n\nexec /sbin/docker-entrypoint.sh",
-  "config": {
-    "files": "{}",
-    "startup": "{\"done\": \"Application startup complete\"}",
-    "logs": "{}",
-    "stop": "^C"
-  },
-  "variables": [
-    {
-      "name": "Redis URL",
-      "description": "Redis instance URL (e.g. redis://127.0.0.1:6379 or redis://:password@127.0.0.1:6379). Required.",
-      "env_variable": "PAPERLESS_REDIS",
-      "default_value": "",
-      "user_viewable": true,
-      "user_editable": true,
-      "rules": "required|string",
-      "field_type": "text"
+    "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PANEL",
+    "meta": {
+        "version": "PLCN_v1",
+        "update_url": null
     },
-    {
-      "name": "Database Engine",
-      "description": "Database engine to use (sqlite, postgres, or mariadb). SQLite is default and needs no extra variables.",
-      "env_variable": "PAPERLESS_DBENGINE",
-      "default_value": "sqlite",
-      "user_viewable": true,
-      "user_editable": true,
-      "rules": "required|in:sqlite,postgres,mariadb",
-      "field_type": "text"
+    "exported_at": "2026-06-24T23:13:49+00:00",
+    "name": "Paperless-ngx",
+    "author": "antigravity@gemini.internal",
+    "uuid": "b56e4c76-ef1a-464e-bc1c-99c07e0c4b8b",
+    "description": "A document management system that transforms your physical documents into a searchable online archive. Requires Redis and optionally PostgreSQL/MariaDB.",
+    "features": null,
+    "docker_images": {
+        "Paperless-ngx (Latest)": "ghcr.io/paperless-ngx/paperless-ngx:latest"
     },
-    {
-      "name": "Database Host",
-      "description": "Hostname or IP address of the database server.",
-      "env_variable": "PAPERLESS_DBHOST",
-      "default_value": "",
-      "user_viewable": true,
-      "user_editable": true,
-      "rules": "nullable|string",
-      "field_type": "text"
+    "file_denylist": [],
+    "startup": "mkdir -p /home/container/data /home/container/media /home/container/consume /home/container/export\n\nexport PAPERLESS_DATA_DIR=\"/home/container/data\"\nexport PAPERLESS_MEDIA_ROOT=\"/home/container/media\"\nexport PAPERLESS_CONSUMPTION_DIR=\"/home/container/consume\"\nexport PAPERLESS_EXPORT_DIR=\"/home/container/export\"\nexport PAPERLESS_PORT=\"{{SERVER_PORT}}\"\n\nif [ -z \"{{PAPERLESS_SECRET_KEY}}\" ]; then\n    echo \"Generating random Django secret key...\"\n    export PAPERLESS_SECRET_KEY=$(tr -dc 'a-z0-9!@#%^&*(-_=+)' < /dev/urandom | head -c 50)\nfi\n\nexec /sbin/docker-entrypoint.sh",
+    "config": {
+        "files": "{}",
+        "startup": "{\r\n    \"done\": \"Application startup complete\"\r\n}",
+        "logs": "{}",
+        "stop": "^C"
     },
-    {
-      "name": "Database Port",
-      "description": "Port of the database server.",
-      "env_variable": "PAPERLESS_DBPORT",
-      "default_value": "",
-      "user_viewable": true,
-      "user_editable": true,
-      "rules": "nullable|integer",
-      "field_type": "text"
+    "scripts": {
+        "installation": {
+            "script": "#!/bin/ash\r\necho 'Install complete'",
+            "container": "ghcr.io/parkervcp/installers:alpine",
+            "entrypoint": "ash"
+        }
     },
-    {
-      "name": "Database Name",
-      "description": "The name of the database to use.",
-      "env_variable": "PAPERLESS_DBNAME",
-      "default_value": "paperless",
-      "user_viewable": true,
-      "user_editable": true,
-      "rules": "nullable|string",
-      "field_type": "text"
-    },
-    {
-      "name": "Database User",
-      "description": "Username for database authentication.",
-      "env_variable": "PAPERLESS_DBUSER",
-      "default_value": "paperless",
-      "user_viewable": true,
-      "user_editable": true,
-      "rules": "nullable|string",
-      "field_type": "text"
-    },
-    {
-      "name": "Database Password",
-      "description": "Password for database authentication.",
-      "env_variable": "PAPERLESS_DBPASS",
-      "default_value": "",
-      "user_viewable": true,
-      "user_editable": true,
-      "rules": "nullable|string",
-      "field_type": "text"
-    },
-    {
-      "name": "Paperless Admin User",
-      "description": "Initial superuser to create (optional).",
-      "env_variable": "PAPERLESS_ADMIN_USER",
-      "default_value": "admin",
-      "user_viewable": true,
-      "user_editable": true,
-      "rules": "nullable|string|min:3",
-      "field_type": "text"
-    },
-    {
-      "name": "Paperless Admin Password",
-      "description": "Initial superuser password (optional). Keep secure.",
-      "env_variable": "PAPERLESS_ADMIN_PASSWORD",
-      "default_value": "",
-      "user_viewable": true,
-      "user_editable": true,
-      "rules": "nullable|string|min:8",
-      "field_type": "text"
-    },
-    {
-      "name": "Paperless Admin Email",
-      "description": "Initial superuser email address (optional).",
-      "env_variable": "PAPERLESS_ADMIN_EMAIL",
-      "default_value": "admin@example.com",
-      "user_viewable": true,
-      "user_editable": true,
-      "rules": "nullable|email",
-      "field_type": "text"
-    },
-    {
-      "name": "Django Secret Key",
-      "description": "A random secret key for Django. Leave blank to generate automatically.",
-      "env_variable": "PAPERLESS_SECRET_KEY",
-      "default_value": "",
-      "user_viewable": true,
-      "user_editable": true,
-      "rules": "nullable|string",
-      "field_type": "text"
-    },
-    {
-      "name": "Paperless URL",
-      "description": "The URL you will use to access Paperless (e.g. http://192.168.1.100:8000 or https://paperless.domain.com). Required for CSRF validation.",
-      "env_variable": "PAPERLESS_URL",
-      "default_value": "",
-      "user_viewable": true,
-      "user_editable": true,
-      "rules": "nullable|string",
-      "field_type": "text"
-    }
-  ]
+    "variables": [
+        {
+            "name": "Redis URL",
+            "description": "Redis instance URL (e.g. redis://127.0.0.1:6379 or redis://:password@127.0.0.1:6379). Required.",
+            "env_variable": "PAPERLESS_REDIS",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "required",
+                "string"
+            ],
+            "sort": null
+        },
+        {
+            "name": "Database Engine",
+            "description": "Database engine to use (sqlite, postgres, or mariadb). SQLite is default and needs no extra variables.",
+            "env_variable": "PAPERLESS_DBENGINE",
+            "default_value": "sqlite",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "required",
+                "in:sqlite,postgres,mariadb"
+            ],
+            "sort": null
+        },
+        {
+            "name": "Database Host",
+            "description": "Hostname or IP address of the database server.",
+            "env_variable": "PAPERLESS_DBHOST",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "nullable",
+                "string"
+            ],
+            "sort": null
+        },
+        {
+            "name": "Database Port",
+            "description": "Port of the database server.",
+            "env_variable": "PAPERLESS_DBPORT",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "nullable",
+                "integer"
+            ],
+            "sort": null
+        },
+        {
+            "name": "Database Name",
+            "description": "The name of the database to use.",
+            "env_variable": "PAPERLESS_DBNAME",
+            "default_value": "paperless",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "nullable",
+                "string"
+            ],
+            "sort": null
+        },
+        {
+            "name": "Database User",
+            "description": "Username for database authentication.",
+            "env_variable": "PAPERLESS_DBUSER",
+            "default_value": "paperless",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "nullable",
+                "string"
+            ],
+            "sort": null
+        },
+        {
+            "name": "Database Password",
+            "description": "Password for database authentication.",
+            "env_variable": "PAPERLESS_DBPASS",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "nullable",
+                "string"
+            ],
+            "sort": null
+        },
+        {
+            "name": "Paperless Admin User",
+            "description": "Initial superuser to create (optional).",
+            "env_variable": "PAPERLESS_ADMIN_USER",
+            "default_value": "admin",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "nullable",
+                "string",
+                "min:3"
+            ],
+            "sort": null
+        },
+        {
+            "name": "Paperless Admin Password",
+            "description": "Initial superuser password (optional). Keep secure.",
+            "env_variable": "PAPERLESS_ADMIN_PASSWORD",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "nullable",
+                "string",
+                "min:8"
+            ],
+            "sort": null
+        },
+        {
+            "name": "Paperless Admin Email",
+            "description": "Initial superuser email address (optional).",
+            "env_variable": "PAPERLESS_ADMIN_EMAIL",
+            "default_value": "admin@example.com",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "nullable",
+                "email"
+            ],
+            "sort": null
+        },
+        {
+            "name": "Django Secret Key",
+            "description": "A random secret key for Django. Leave blank to generate automatically.",
+            "env_variable": "PAPERLESS_SECRET_KEY",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "nullable",
+                "string"
+            ],
+            "sort": null
+        },
+        {
+            "name": "Paperless URL",
+            "description": "The URL you will use to access Paperless (e.g. http://192.168.1.100:8000 or https://paperless.domain.com). Required for CSRF validation.",
+            "env_variable": "PAPERLESS_URL",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "nullable",
+                "string"
+            ],
+            "sort": null
+        }
+    ]
 }

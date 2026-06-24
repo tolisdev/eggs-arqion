@@ -1,65 +1,91 @@
 {
-  "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PTERODACTYL PANEL",
-  "meta": {
-    "version": "PTDL_v2",
-    "update_url": null
-  },
-  "name": "MariaDB",
-  "description": "An open-source relational database management system, backward compatible with MySQL. Widely used for web applications like Nextcloud.",
-  "features": null,
-  "docker_images": {
-    "MariaDB 11.2": "mariadb:11.2",
-    "MariaDB 10.11": "mariadb:10.11",
-    "MariaDB (Latest)": "mariadb:latest"
-  },
-  "file_denylist": [],
-  "startup": "cat << EOF > /tmp/mariadb_init.sql\nALTER USER 'root'@'localhost' IDENTIFIED BY '${MARIADB_ROOT_PASSWORD}';\nCREATE DATABASE IF NOT EXISTS ${MARIADB_DATABASE};\nCREATE USER IF NOT EXISTS '${MARIADB_USER}'@'%' IDENTIFIED BY '${MARIADB_PASSWORD}';\nALTER USER '${MARIADB_USER}'@'%' IDENTIFIED BY '${MARIADB_PASSWORD}';\nGRANT ALL PRIVILEGES ON ${MARIADB_DATABASE}.* TO '${MARIADB_USER}'@'%';\nFLUSH PRIVILEGES;\nEOF\n\nif [ ! -d \"/home/container/mysql\" ]; then\n    echo \"Initializing MariaDB database...\"\n    mkdir -p /home/container/mysql\n    mysql_install_db --user=$(whoami) --datadir=/home/container/mysql\nfi\n\necho \"Starting MariaDB...\"\nexec mariadbd --port=${SERVER_PORT} --bind-address=0.0.0.0 --datadir=/home/container/mysql --init-file=/tmp/mariadb_init.sql",
-  "config": {
-    "files": "{}",
-    "startup": "{\"done\": \"ready for connections\"}",
-    "logs": "{}",
-    "stop": "^C"
-  },
-  "variables": [
-    {
-      "name": "MariaDB Root Password",
-      "description": "The password for the MariaDB root user.",
-      "env_variable": "MARIADB_ROOT_PASSWORD",
-      "default_value": "",
-      "user_viewable": true,
-      "user_editable": true,
-      "rules": "required|string|max:128",
-      "field_type": "text"
+    "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PANEL",
+    "meta": {
+        "version": "PLCN_v1",
+        "update_url": null
     },
-    {
-      "name": "MariaDB User",
-      "description": "The custom database user to create.",
-      "env_variable": "MARIADB_USER",
-      "default_value": "pterodactyl",
-      "user_viewable": true,
-      "user_editable": true,
-      "rules": "required|alpha_dash|max:64",
-      "field_type": "text"
+    "exported_at": "2026-06-24T23:13:49+00:00",
+    "name": "MariaDB",
+    "author": "antigravity@gemini.internal",
+    "uuid": "d79f8b78-cb6c-482a-a9ee-a76472d4cf3a",
+    "description": "An open-source relational database management system, backward compatible with MySQL. Widely used for web applications like Nextcloud.",
+    "features": null,
+    "docker_images": {
+        "MariaDB 11.2": "mariadb:11.2",
+        "MariaDB 10.11": "mariadb:10.11",
+        "MariaDB (Latest)": "mariadb:latest"
     },
-    {
-      "name": "MariaDB Password",
-      "description": "The password for the custom database user.",
-      "env_variable": "MARIADB_PASSWORD",
-      "default_value": "",
-      "user_viewable": true,
-      "user_editable": true,
-      "rules": "required|string|max:128",
-      "field_type": "text"
+    "file_denylist": [],
+    "startup": "cat << EOF > /tmp/mariadb_init.sql\nALTER USER 'root'@'localhost' IDENTIFIED BY '{{MARIADB_ROOT_PASSWORD}}';\nCREATE DATABASE IF NOT EXISTS {{MARIADB_DATABASE}};\nCREATE USER IF NOT EXISTS '{{MARIADB_USER}}'@'%' IDENTIFIED BY '{{MARIADB_PASSWORD}}';\nALTER USER '{{MARIADB_USER}}'@'%' IDENTIFIED BY '{{MARIADB_PASSWORD}}';\nGRANT ALL PRIVILEGES ON {{MARIADB_DATABASE}}.* TO '{{MARIADB_USER}}'@'%';\nFLUSH PRIVILEGES;\nEOF\n\nif [ ! -d \"/home/container/mysql\" ]; then\n    echo \"Initializing MariaDB database...\"\n    mkdir -p /home/container/mysql\n    mysql_install_db --user=$(whoami) --datadir=/home/container/mysql\nfi\n\necho \"Starting MariaDB...\"\nexec mariadbd --port={{SERVER_PORT}} --bind-address=0.0.0.0 --datadir=/home/container/mysql --init-file=/tmp/mariadb_init.sql",
+    "config": {
+        "files": "{}",
+        "startup": "{\r\n    \"done\": \"ready for connections\"\r\n}",
+        "logs": "{}",
+        "stop": "^C"
     },
-    {
-      "name": "MariaDB Database",
-      "description": "The default database name to create.",
-      "env_variable": "MARIADB_DATABASE",
-      "default_value": "pterodactyl",
-      "user_viewable": true,
-      "user_editable": true,
-      "rules": "required|alpha_dash|max:64",
-      "field_type": "text"
-    }
-  ]
+    "scripts": {
+        "installation": {
+            "script": "#!/bin/ash\r\necho 'Install complete'",
+            "container": "ghcr.io/parkervcp/installers:alpine",
+            "entrypoint": "ash"
+        }
+    },
+    "variables": [
+        {
+            "name": "MariaDB Root Password",
+            "description": "The password for the MariaDB root user.",
+            "env_variable": "MARIADB_ROOT_PASSWORD",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "required",
+                "string",
+                "max:128"
+            ],
+            "sort": null
+        },
+        {
+            "name": "MariaDB User",
+            "description": "The custom database user to create.",
+            "env_variable": "MARIADB_USER",
+            "default_value": "pterodactyl",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "required",
+                "alpha_dash",
+                "max:64"
+            ],
+            "sort": null
+        },
+        {
+            "name": "MariaDB Password",
+            "description": "The password for the custom database user.",
+            "env_variable": "MARIADB_PASSWORD",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "required",
+                "string",
+                "max:128"
+            ],
+            "sort": null
+        },
+        {
+            "name": "MariaDB Database",
+            "description": "The default database name to create.",
+            "env_variable": "MARIADB_DATABASE",
+            "default_value": "pterodactyl",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": [
+                "required",
+                "alpha_dash",
+                "max:64"
+            ],
+            "sort": null
+        }
+    ]
 }
