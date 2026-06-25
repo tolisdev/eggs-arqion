@@ -4,88 +4,29 @@
         "version": "PLCN_v1",
         "update_url": null
     },
-    "exported_at": "2026-06-24T23:13:49+00:00",
-    "name": "MariaDB",
-    "author": "antigravity@gemini.internal",
-    "uuid": "d79f8b78-cb6c-482a-a9ee-a76472d4cf3a",
-    "description": "An open-source relational database management system, backward compatible with MySQL. Widely used for web applications like Nextcloud.",
-    "features": null,
+    "exported_at": "2025-02-25T20:28:39+00:00",
+    "name": "MariaDB 11.5",
+    "author": "parker@parkervcp.com",
+    "uuid": "b376eda5-e338-4507-b4f4-e11f949d4214",
+    "description": "One of the most popular database servers. Made by the original developers of MySQL. Guaranteed to stay open source.",
+    "features": [],
     "docker_images": {
-        "MariaDB 11.2": "mariadb:11.2",
-        "MariaDB 10.11": "mariadb:10.11",
-        "MariaDB (Latest)": "mariadb:latest"
+        "MariaDB 11.5 (Yolk)": "ghcr.io/parkervcp/yolks:mariadb_11.5"
     },
     "file_denylist": [],
-    "startup": "cat << EOF > /tmp/mariadb_init.sql\nALTER USER 'root'@'localhost' IDENTIFIED BY '{{MARIADB_ROOT_PASSWORD}}';\nCREATE DATABASE IF NOT EXISTS {{MARIADB_DATABASE}};\nCREATE USER IF NOT EXISTS '{{MARIADB_USER}}'@'%' IDENTIFIED BY '{{MARIADB_PASSWORD}}';\nALTER USER '{{MARIADB_USER}}'@'%' IDENTIFIED BY '{{MARIADB_PASSWORD}}';\nGRANT ALL PRIVILEGES ON {{MARIADB_DATABASE}}.* TO '{{MARIADB_USER}}'@'%';\nFLUSH PRIVILEGES;\nEOF\n\nif [ ! -d \"/home/container/mysql\" ]; then\n    echo \"Initializing MariaDB database...\"\n    mkdir -p /home/container/mysql\n    mysql_install_db --user=$(whoami) --datadir=/home/container/mysql\nfi\n\necho \"Starting MariaDB...\"\nexec mariadbd --port={{SERVER_PORT}} --bind-address=0.0.0.0 --datadir=/home/container/mysql --init-file=/tmp/mariadb_init.sql",
+    "startup": "{ /usr/sbin/mariadbd --defaults-file=/home/container/.my.cnf & } && sleep 5 && mariadb -u container",
     "config": {
-        "files": "{}",
-        "startup": "{\r\n    \"done\": \"ready for connections\"\r\n}",
+        "files": "{\n    \".my.cnf\": {\n        \"parser\": \"file\",\n        \"find\": {\n            \"port\": \"port = {{SERVER_PORT}}\",\n            \"bind-address\": \"bind-address=0.0.0.0\"\n        }\n    }\n}",
+        "startup": "{\n    \"done\": \"ready for connections.\"\n}",
         "logs": "{}",
-        "stop": "^C"
+        "stop": "shutdown; exit;"
     },
     "scripts": {
         "installation": {
-            "script": "#!/bin/ash\r\necho 'Install complete'",
-            "container": "ghcr.io/parkervcp/installers:alpine",
-            "entrypoint": "ash"
+            "script": "#!/bin/bash\n# MariaDB Installation Script\n#\n# Server Files: /mnt/server\nset -x\n\necho -e \"installing dependencies\"\napt-get -y update\napt-get -y install curl\n\n## add user\necho -e \"adding container user\"\nuseradd -d /home/container -m container -s /bin/bash\n\n## own server to container user\nchown container: /mnt/server/\n\n## mkdir and install db\necho -e \"installing mariadb database\"\nrunuser -l container -c 'mkdir -p /mnt/server/run/mariadbd'\nrunuser -l container -c 'mkdir -p /mnt/server/log/mariadb'\nrunuser -l container -c 'mkdir /mnt/server/mariadb'\n\n## get install config\nrunuser -l container -c 'curl https://raw.githubusercontent.com/pelican-eggs/database/refs/heads/main/sql/mariadb/install.maria.cnf > /mnt/server/install.maria.cnf'\n\n# install with install config\nrunuser -l container -c 'mariadb-install-db --defaults-file=/mnt/server/install.maria.cnf'\n\n## remove install config\nrm /mnt/server/install.maria.cnf\n\nif [ ! -f /mnt/server/.my.cnf ]; then\n    curl https://raw.githubusercontent.com/pelican-eggs/database/refs/heads/main/sql/mariadb/.maria.cnf > /mnt/server/.my.cnf\nfi\n\necho -e \"install complete\"\n\nexit",
+            "container": "mariadb:11.5",
+            "entrypoint": "bash"
         }
     },
-    "variables": [
-        {
-            "name": "MariaDB Root Password",
-            "description": "The password for the MariaDB root user.",
-            "env_variable": "MARIADB_ROOT_PASSWORD",
-            "default_value": "",
-            "user_viewable": true,
-            "user_editable": true,
-            "rules": [
-                "required",
-                "string",
-                "max:128"
-            ],
-            "sort": null
-        },
-        {
-            "name": "MariaDB User",
-            "description": "The custom database user to create.",
-            "env_variable": "MARIADB_USER",
-            "default_value": "pterodactyl",
-            "user_viewable": true,
-            "user_editable": true,
-            "rules": [
-                "required",
-                "alpha_dash",
-                "max:64"
-            ],
-            "sort": null
-        },
-        {
-            "name": "MariaDB Password",
-            "description": "The password for the custom database user.",
-            "env_variable": "MARIADB_PASSWORD",
-            "default_value": "",
-            "user_viewable": true,
-            "user_editable": true,
-            "rules": [
-                "required",
-                "string",
-                "max:128"
-            ],
-            "sort": null
-        },
-        {
-            "name": "MariaDB Database",
-            "description": "The default database name to create.",
-            "env_variable": "MARIADB_DATABASE",
-            "default_value": "pterodactyl",
-            "user_viewable": true,
-            "user_editable": true,
-            "rules": [
-                "required",
-                "alpha_dash",
-                "max:64"
-            ],
-            "sort": null
-        }
-    ]
+    "variables": []
 }

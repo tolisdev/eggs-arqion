@@ -4,28 +4,26 @@
         "version": "PLCN_v1",
         "update_url": null
     },
-    "exported_at": "2026-06-24T23:13:49+00:00",
-    "name": "Redis",
-    "author": "antigravity@gemini.internal",
-    "uuid": "e9a3b890-84c1-4c6e-82d2-8b9a9d7eb190",
-    "description": "An in-memory key-value database, cache, and message broker. Commonly used as a task broker for Paperless-ngx or for performance caching in Nextcloud.",
+    "exported_at": "2025-02-09T15:43:04+00:00",
+    "name": "Redis 7",
+    "author": "parker@parkervcp.com",
+    "uuid": "96482492-e3ef-4d3b-9d9c-fd8d618e54b5",
+    "description": "Redis is an open source (BSD licensed), in-memory data structure store, used as a database, cache and message broker. It supports data structures such as strings, hashes, lists, sets, sorted sets with range queries, bitmaps, hyperloglogs, geospatial indexes with radius queries and streams.",
     "features": null,
     "docker_images": {
-        "Redis 7 (Alpine)": "redis:7-alpine",
-        "Redis 7": "redis:7",
-        "Redis (Latest Alpine)": "redis:alpine"
+        "Redis 7 (Yolk)": "ghcr.io/parkervcp/yolks:redis_7"
     },
     "file_denylist": [],
-    "startup": "if [ -z \"{{REDIS_PASSWORD}}\" ]; then exec redis-server --port {{SERVER_PORT}} --protected-mode no --dir /home/container; else exec redis-server --port {{SERVER_PORT}} --requirepass \"{{REDIS_PASSWORD}}\" --protected-mode no --dir /home/container; fi",
+    "startup": "/usr/local/bin/redis-server /home/container/redis.conf --save 60 1 --dir /home/container/ --bind 0.0.0.0 --port {{SERVER_PORT}} --requirepass '{{SERVER_PASSWORD}}' --maxmemory {{SERVER_MEMORY}}mb --daemonize yes && redis-cli -p {{SERVER_PORT}}; redis-cli -p {{SERVER_PORT}} -a '{{SERVER_PASSWORD}}' shutdown save",
     "config": {
         "files": "{}",
-        "startup": "{\r\n    \"done\": \"Ready to accept connections\"\r\n}",
+        "startup": "{\r\n    \"done\": \"Configuration loaded\"\r\n}",
         "logs": "{}",
-        "stop": "shutdown"
+        "stop": "^C"
     },
     "scripts": {
         "installation": {
-            "script": "#!/bin/ash\r\necho 'Install complete'",
+            "script": "#!/bin/ash\r\n# Redis Installation Script\r\n#\r\n# Server Files: /mnt/server\r\n\r\napk add --no-cache curl\r\n\r\nif [ ! -d /mnt/server ]; then\r\n    mkdir /mnt/server/\r\nfi\r\n\r\ncd /mnt/server/\r\n\r\nif [ ! -d /mnt/server/redis.conf ]; then\r\n    curl https://raw.githubusercontent.com/pelican-eggs/database/main/redis/redis-7/redis.conf -o redis.conf\r\nfi\r\n\r\nsleep 5\r\necho -e \"Install complete. Made this to not have issues.\"",
             "container": "ghcr.io/parkervcp/installers:alpine",
             "entrypoint": "ash"
         }
@@ -33,15 +31,14 @@
     "variables": [
         {
             "name": "Redis Password",
-            "description": "The password required to connect to the Redis server. Leave empty to run without a password.",
-            "env_variable": "REDIS_PASSWORD",
-            "default_value": "",
+            "description": "The password redis should use to secure the server.",
+            "env_variable": "SERVER_PASSWORD",
+            "default_value": "P@55w0rd",
             "user_viewable": true,
             "user_editable": true,
             "rules": [
-                "nullable",
-                "string",
-                "max:128"
+                "required",
+                "string"
             ],
             "sort": null
         }
