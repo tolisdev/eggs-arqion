@@ -4,75 +4,60 @@
         "version": "PLCN_v1",
         "update_url": null
     },
-    "exported_at": "2026-06-24T23:13:49+00:00",
-    "name": "PostgreSQL",
-    "author": "antigravity@gemini.internal",
-    "uuid": "c36d2e67-d81b-417d-96ac-5a82efdb02d2",
-    "description": "An open-source, highly robust object-relational database system. Excellent for high-performance usage like Paperless-ngx or large Nextcloud installations.",
+    "exported_at": "2024-06-02T14:34:27+00:00",
+    "name": "PostgreSQL (Pelican)",
+    "author": "parker@parkervcp.com",
+    "uuid": "3490d65d-66df-431e-8455-99a649f89c0e",
+    "description": "A default Postgres install running as the non-root container user with local socket routing.",
     "features": null,
     "docker_images": {
-        "PostgreSQL 16 (Alpine)": "postgres:16-alpine",
-        "PostgreSQL 15 (Alpine)": "postgres:15-alpine",
-        "PostgreSQL 14 (Alpine)": "postgres:14-alpine",
-        "PostgreSQL (Latest Alpine)": "postgres:alpine"
+        "PostgreSQL 16 (Yolk)": "ghcr.io/parkervcp/yolks:postgres_16"
     },
     "file_denylist": [],
-    "startup": "export PGPASSWORD=\"{{POSTGRES_PASSWORD}}\"\nif [ ! -d \"/home/container/postgres\" ]; then\n    echo \"Initializing database...\"\n    mkdir -p /home/container/postgres\n    echo \"{{POSTGRES_PASSWORD}}\" > /tmp/pg_pass\n    initdb -D /home/container/postgres -U {{POSTGRES_USER}} --pwfile=/tmp/pg_pass --auth=scram-sha-256\n    rm -f /tmp/pg_pass\n    echo \"host all all 0.0.0.0/0 scram-sha-256\" >> /home/container/postgres/pg_hba.conf\n    echo \"host all all 127.0.0.1/32 trust\" >> /home/container/postgres/pg_hba.conf\n    echo \"listen_addresses = '*'\" >> /home/container/postgres/postgresql.conf\nfi\npostgres -D /home/container/postgres -p {{SERVER_PORT}} &\nPG_PID=$!\necho \"Waiting for PostgreSQL to start...\"\nuntil pg_isready -h localhost -p {{SERVER_PORT}} -U {{POSTGRES_USER}}; do\n    sleep 1\ndone\necho \"Syncing database password...\"\npsql -h localhost -p {{SERVER_PORT}} -U {{POSTGRES_USER}} -d postgres -c \"ALTER USER {{POSTGRES_USER}} WITH PASSWORD '{{POSTGRES_PASSWORD}}';\"\npsql -h localhost -p {{SERVER_PORT}} -U {{POSTGRES_USER}} -d postgres -tc \"SELECT 1 FROM pg_database WHERE datname = '{{POSTGRES_DB}}'\" | grep -q 1 || psql -h localhost -p {{SERVER_PORT}} -U {{POSTGRES_USER}} -d postgres -c \"CREATE DATABASE {{POSTGRES_DB}} OWNER {{POSTGRES_USER}};\"\nwait $PG_PID",
+    "startup": "postgres -D /home/container/postgres_db/",
     "config": {
-        "files": "{}",
+        "files": "{\r\n    \"postgres_db/postgresql.conf\": {\r\n        \"parser\": \"file\",\r\n        \"find\": {\r\n            \"#port =\": \"port = {{SERVER_PORT}}\",\r\n            \"#external_pid_file =\": \"external_pid_file = '/home/container/postgres_db/run/postgres.pid'\",\r\n            \"#unix_socket_directories =\": \"unix_socket_directories = '/home/container/postgres_db/run/'\"\r\n        }\r\n    }\r\n}",
         "startup": "{\r\n    \"done\": \"database system is ready to accept connections\"\r\n}",
         "logs": "{}",
         "stop": "^C"
     },
     "scripts": {
         "installation": {
-            "script": "#!/bin/ash\r\necho 'Install complete'",
-            "container": "ghcr.io/parkervcp/installers:alpine",
-            "entrypoint": "ash"
+            "script": "#! /bin/ash\r\nadduser -D -h /home/container container\r\n\r\nchown -R container: /mnt/server/\r\n\r\nsu container -c 'initdb -D /mnt/server/postgres_db/ -A md5 -U \"$PGUSER\" --pwfile=<(echo \"$PGPASSWORD\")'\r\n\r\nmkdir -p /mnt/server/postgres_db/run/\r\n\r\n## Add default \"allow from all\" auth rule to pg_hba\r\nif ! grep -q \"# Custom rules\" \"/mnt/server/postgres_db/pg_hba.conf\"; then\r\n    echo -e \"# Custom rules\\nhost    all             all             0.0.0.0/0               md5\" >> \"/mnt/server/postgres_db/pg_hba.conf\"\r\nfi\r\n\r\necho -e \"Done\"",
+            "container": "postgres:16-alpine",
+            "entrypoint": "bash"
         }
     },
     "variables": [
         {
-            "name": "Postgres User",
-            "description": "The default user to create.",
-            "env_variable": "POSTGRES_USER",
+            "name": "Superuser Name",
+            "description": "The username for the postgres superuser",
+            "env_variable": "PGUSER",
             "default_value": "pterodactyl",
             "user_viewable": true,
-            "user_editable": true,
-            "rules": [
-                "required",
-                "alpha_dash",
-                "max:64"
-            ],
-            "sort": null
-        },
-        {
-            "name": "Postgres Password",
-            "description": "The password for the default database user.",
-            "env_variable": "POSTGRES_PASSWORD",
-            "default_value": "",
-            "user_viewable": true,
-            "user_editable": true,
+            "user_editable": false,
             "rules": [
                 "required",
                 "string",
-                "max:128"
+                "max:20"
             ],
-            "sort": null
+            "sort": null,
+            "field_type": "text"
         },
         {
-            "name": "Postgres Database",
-            "description": "The default database name to create.",
-            "env_variable": "POSTGRES_DB",
-            "default_value": "pterodactyl",
+            "name": "Superuser Password",
+            "description": "The postgres super user password with a strong default.\r\nYou should be generating new ones for each server.\r\nIf you don't then users can hit other users DB's",
+            "env_variable": "PGPASSWORD",
+            "default_value": "Pl3453Ch4n63M3!",
             "user_viewable": true,
-            "user_editable": true,
+            "user_editable": false,
             "rules": [
                 "required",
-                "alpha_dash",
-                "max:64"
+                "string",
+                "max:20"
             ],
-            "sort": null
+            "sort": null,
+            "field_type": "text"
         }
     ]
 }
